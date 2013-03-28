@@ -1,0 +1,6 @@
+<aspectj>
+	<aspects>
+		<aspect name="com.tpg.tmjug.aop.aspect.ValidationAspect" />
+		<aspect name="com.tpg.tmjug.aop.aspect.LoggingAspect" />
+	</aspects>
+</aspectj>
