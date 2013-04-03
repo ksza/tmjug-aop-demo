@@ -1,3 +1,10 @@
+*.out
+*.log
+*.DS_Store
+*.epoch
+*db.data
+*db.redo
+
 #Build
 target
 target-eclipse

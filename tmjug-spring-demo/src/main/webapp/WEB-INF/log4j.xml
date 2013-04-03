@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration>
+    <!-- Output to Console -->
+    <appender name="Console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-6p %m [%c{1}] %n"/>
+        </layout>
+    </appender>
+
+    <category name="org.tmjug.spring">
+      <priority value="INFO"/>
+    </category>
+
+    <category name="org.springframework">
+      <priority value="ERROR"/>
+    </category>
+
+    <category name="org.springframework.oxm">
+      <priority value="ERROR"/>
+    </category>
+
+    <category name="org.apache">
+      <priority value="ERROR"/>
+    </category>
+
+    <!-- The root logger -->
+    <root>
+        <level value="ERROR"/>
+        <appender-ref ref="Console"/>
+    </root>
+</log4j:configuration>

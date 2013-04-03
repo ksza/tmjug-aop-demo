@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xsi:schemaLocation=
+               "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd">
+				
+	<!-- ========================= Data-sources definitions ========================= -->
+
+    <!-- The data-source used to connect to the database -->
+    <bean id="springDemoSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"
+			p:driverClassName="${jdbc.driverClassName}" p:url="${spring.demo.jdbc.url}"
+			p:username="${spring.demo.database.username}" p:password="${spring.demo.database.password}"/>
+
+    <bean id="hibernateProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean"
+        p:location="classpath:database/hibernate.properties"/>
+
+    <!-- The session factory used to manage Hibernate sessions for the 'springdemo' database -->
+    <bean id="springDemoSessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
+        p:packagesToScan="org.tmjug.spring.demo.entities" p:dataSource-ref="springDemoSource"
+        p:hibernateProperties-ref="hibernateProperties">
+
+        <!-- needed by the IDEA & Hibernate integration -->
+        <property name="annotatedPackages">
+            <list>
+                <value>org.tmjug.spring.demo.entities</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- The transaction manager used to handle Hibernate transactions -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager"
+        p:sessionFactory-ref="springDemoSessionFactory">
+    </bean>
+
+	<!-- Database initialization scripts. If any of the script fails, the initialization stops -->
+	<jdbc:initialize-database data-source="springDemoSource">
+		<jdbc:script location="${users.creation.script}"/>
+	</jdbc:initialize-database>
+</beans>

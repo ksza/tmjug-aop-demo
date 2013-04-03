@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+    <!--
+		Log4J configuration listener. As the context specifies a context-param "log4jConfigLocation",
+		its file path is used to load the Log4J configuration, including periodic refresh checks.
+
+		Would fall back to default Log4J initialization (non-refreshing) if no special context-params are given.
+	-->
+    <listener>
+		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+	</listener>
+
+    <context-param>
+        <description>
+            Location of the Log4J config file; either a "classpath:" location (e.g. "classpath:myLog4j.properties"),
+            an absolute file URL (e.g. "file:C:/log4j.properties), or a plain path relative to the web application
+            root directory (e.g. "/WEB-INF/log4j.properties"). If not specified, default Log4J initialization will apply
+            ("log4j.properties" in the class path; see Log4J documentation for details).
+        </description>
+        <param-name>log4jConfigLocation</param-name>
+        <param-value>/WEB-INF/log4j.xml</param-value>
+    </context-param>
+
+    <context-param>
+        <description>
+            Whether the web app root system property should be exposed, allowing for log file paths relative to the web
+            application root directory. Default is "true"; specify "false" to suppress expose of the web app root
+            system property. See below for details on how to use this system property in log file locations.
+        </description>
+        <param-name>log4jExposeWebAppRoot</param-name>
+        <param-value>false</param-value>
+    </context-param>
+
+    <!--
+    <context-param>
+        <description>
+            Interval between config file refresh checks, in milliseconds. If not specified, no refresh checks will happen,
+            which avoids starting Log4J's watchdog thread.
+        </description>
+        <param-name>log4jRefreshInterval</param-name>
+        <param-value>10</param-value>
+    </context-param>
+    -->
+
+    <!--
+		Loads the root application context of this web app at startup, by default from "/WEB-INF/applicationContext.xml".
+
+		Note that you need to fall back to Spring's ContextLoaderServlet for J2EE servers that do not follow the Servlet 2.4 initialization order.
+
+		Use WebApplicationContextUtils.getWebApplicationContext(servletContext) to access it anywhere in the web application, outside of the framework.
+
+		The root context is the parent of all servlet-specific contexts. This means that its beans are automatically available in these child contexts,
+	    both for getBean(name) calls and (external) bean references.
+	-->
+    <!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+    <!--
+        Location of the XML file that defines the root application context. If it's undefined, it will automatically load
+        the settings from the file 'applicationContext.xml'
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:/META-INF/spring/applicationContext.xml</param-value>
+	</context-param>
+    -->
+
+	<!--
+		Servlet that dispatches requests to registered handlers (@Controller implementations).
+		Has its own application context, by default defined in "{servlet-name}-servlet.xml", i. e. "tmjug-spring-demo-servlet.xml".
+
+		- A web app can contain any number of such servlets. Note that this web app has a shared root application context,
+		serving as parent of all DispatcherServlet contexts.
+	-->
+	<servlet>
+		<servlet-name>tmjug-spring-demo</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+
+        <!-- the 'contextConfigLocation' init parameter can be used to customize the location for the base configuration XML file
+        for the Spring Application Context that is loaded by the DispatcherServlet, instead of relying on the default location of <servletname>-context.xml)
+        -->
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>tmjug-spring-demo</servlet-name>
+		<url-pattern>/springdemo/*</url-pattern>
+	</servlet-mapping>
+    
+</web-app>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:oxm="http://www.springframework.org/schema/oxm"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+       	http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/jdbc
+		http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+		http://www.springframework.org/schema/jms
+		http://www.springframework.org/schema/jms/spring-jms.xsd
+    	http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://activemq.apache.org/schema/core
+		http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+	<!-- Wiring with annotations -->
+	<context:annotation-config />
+
+	<!-- Using annotation-driven transactions -->
+	<tx:annotation-driven transaction-manager="jtaTransactionManager" />
+
+
+	<!-- JTA Transaction Manager, provided by Atomikos -->
+	<bean id="atomikosTransactionManager" 
+		class="com.atomikos.icatch.jta.UserTransactionManager"
+		init-method="init" destroy-method="close" />
+	<bean id="atomikosUserTransaction" class="com.atomikos.icatch.jta.UserTransactionImp" />
+
+	<bean id="jtaTransactionManager"
+		class="org.springframework.transaction.jta.JtaTransactionManager">
+		<property name="transactionManager" ref="atomikosTransactionManager" />
+		<property name="userTransaction" 	ref="atomikosUserTransaction" />
+	</bean>
+
+	<bean id="txnTemplate" 
+		class="org.springframework.transaction.support.TransactionTemplate">
+		<property name="transactionManager" ref="jtaTransactionManager" />
+	</bean>
+
+
+	<!-- Using an in-memory database (H2) -->
+	<jdbc:embedded-database id="dataSource" type="H2">
+		<jdbc:script location="classpath:database/transaction-ddl.sql" />
+	</jdbc:embedded-database>
+
+
+	<!-- Using in-memory messagin (ActiveMQ) -->
+  	<bean id="xaFactory"  
+    		class="org.apache.activemq.ActiveMQXAConnectionFactory"> 
+    	<property name="brokerURL" value="vm://localhost:61616" /> 
+   	</bean>
+   	
+	<bean id="connectionFactory" class="com.atomikos.jms.AtomikosConnectionFactoryBean"
+		init-method="init" destroy-method="close">
+		<property name="uniqueResourceName" value="amq1" />
+		<property name="xaConnectionFactory" ref="xaFactory" />
+	</bean> 
+   
+	<!-- JMS template to connect to queue -->
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" 		ref="connectionFactory" />
+		<property name="defaultDestinationName" value="txn.alert.queue" />
+		<property name="sessionTransacted" value="true"/>
+	</bean>
+	
+
+	<!-- A simple DAO -->
+	<bean id="transactionDao" 
+		class="org.tmjug.spring.demo.dao.TransactionDAOJdbcImpl">
+		<!-- property name="dataSource" ref="dataSource" / -->
+	</bean>
+
+
+	<!-- A simple service -->
+	<bean id="transactionService" 
+		class="org.tmjug.spring.demo.service.TransactionServiceImpl">
+		<!-- property name="transactionDao" ref="transactionDao" / -->
+		<!-- property name="jmsTemplate" ref="jmsTemplate" / -->
+	</bean>
+
+</beans>
